@@ -5,7 +5,8 @@
 [![License: MIT](http://img.shields.io/badge/license-MIT-lightgrey.svg?style=flat)](https://github.com/Yummypets/JSON.kt/blob/master/LICENSE)
 
 <!-- TODO ![Release version](https://img.shields.io/github/release/Yummypets/JSON.kt.svg) -->
-Kotlin JSON Parsing that infers type 🚀
+Kotlin JSON Parsing that infers type 🚀  
+`JSON.kt` is a kotlin wrapper of java's `org.json.JSONObject` that exposes a nicer syntax for kotlin code.
 
 
 ```kotlin
