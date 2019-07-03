@@ -1,5 +1,5 @@
 # JSON.kt
-[![Language: Swift 2, 3 and 4 3](https://img.shields.io/badge/language-kotlin-7963FE.svg?style=flat)](https://kotlinlang.org)
+[![Language: Kotlin](https://img.shields.io/badge/language-kotlin-7963FE.svg?style=flat)](https://kotlinlang.org)
 ![Platform: Android 8+](https://img.shields.io/badge/platform-Android-68b846.svg?style=flat)
 [![codebeat badge](https://codebeat.co/badges/4199536d-2158-42e5-a89a-33259d32b384)](https://codebeat.co/projects/github-com-yummypets-json-kt-master)
 [![License: MIT](http://img.shields.io/badge/license-MIT-lightgrey.svg?style=flat)](https://github.com/Yummypets/JSON.kt/blob/master/LICENSE)
