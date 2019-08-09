@@ -114,7 +114,7 @@ car.name = json("name") ?: "unknown car"
 car.statistics = json("stats", CarStatsJSONMapper()) ?: CarStatistics()
 car.productionStartDate = json("dates.production_dates.start_date") ?: 0
 ```
-### Specify return
+### Specify the return type
 Sometimes it might be necessary to explicitly indicate the return type.
 
 ##### Storing the result in a variable
