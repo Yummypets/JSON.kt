@@ -13,7 +13,7 @@ Kotlin JSON Parsing that infers type 🚀
 car::id < json["id"]
 car::name < json["name"]
 car::statistics < json["stats", CarStatsJSONMapper()]
-car::productionStartDate < json("dates.production_dates.start_date")
+car::productionStartDate < json["dates.production_dates.start_date"]
 ```
 
 ## Why?
@@ -92,7 +92,7 @@ if (jsonObject.has("dates")) {
 car::id < json["id"]
 car::name < json["name"]
 car::statistics < json["stats", CarStatsJSONMapper()]
-car::productionStartDate < json("dates.production_dates.start_date")
+car::productionStartDate < json["dates.production_dates.start_date"]
 ```
 The `<` operator maps a model property with a json key.
 Notice that this does **exactly the same as the old parsing above**, meaning that if key does not exist, nothing happens and the model keeps its previous value.
