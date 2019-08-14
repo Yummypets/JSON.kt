@@ -136,3 +136,31 @@ fun JSON.jsonOrNull(key: String): JSON? {
 
 
 fun isKeyPath(key: String) = key.contains(".")
+
+
+/* Example
+class Car {
+    var id = 0
+    var name = ""
+    var statistics = CarStatistics()
+}
+class CarJSONParser : JSONParser<Car> {
+    @Throws(JSONException::class)
+    override fun parse(json: JSON): Car {
+         val car = Car()
+        // Classic parsing, if key does not exist, do nothing, aka keep model's default value.
+        car::id < json["id"]
+        car::name < json["name"]
+        car::statistics < json["stats", CarStatsJSONMapper()]
+        // Parsing whith default value. if key does not exist set a default.
+        car.id = json("id") ?: 0
+        car.name = json("name") ?: "unknown car"
+        car.statistics = json("stats", CarStatsJSONMapper()) ?: CarStatistics()
+        return car
+    }
+}
+fun usage() {
+    val json = JSON("[aJSONString]")
+    val car = CarJSONParser().parse(json)
+}
+*/
