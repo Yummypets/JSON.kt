@@ -1,5 +1,3 @@
-package com.octopepper.yummypets.goservices.jsonparsers.helpers
-
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -43,25 +41,7 @@ inline operator fun <reified T> KMutableProperty0<T>.compareTo(mapping: JSONMapp
 }
 
 inline fun <reified T>mapJSON(property:KMutableProperty0<T>, json: JSON, key: String) {
-
-    var jsonObject: JSON = json
-    var jsonKey: String = key
-
-    if(isPathKey(key)){
-        val temp = jsonObject.parsePathKey(key)
-        jsonKey = temp.first
-        jsonObject = temp.second
-    }
-
-    when (T::class) {
-        Boolean::class -> (property as? KMutableProperty0<Boolean>)?.apply { set(jsonObject.bool(jsonKey)) }
-        String::class -> (property as? KMutableProperty0<String>)?.apply { set(jsonObject.string(jsonKey)) }
-        Int::class -> (property as? KMutableProperty0<Int>)?.apply { set(jsonObject.int(jsonKey)) }
-        Long::class -> (property as? KMutableProperty0<Long>)?.apply { set(jsonObject.long(jsonKey)) }
-        Double::class -> (property as? KMutableProperty0<Double>)?.apply { set(jsonObject.double(jsonKey)) }
-        JSONArray::class -> (property as? KMutableProperty0<JSONArray>)?.apply { set(jsonObject.jsonObject.getJSONArray(jsonKey)) }
-        JSONObject::class -> (property as? KMutableProperty0<JSONObject>)?.apply { set(jsonObject.jsonObject.getJSONObject(jsonKey)) }
-    }
+    getValue<T>(json, key)?.let { property.set(it) }
 }
 
 // Mapping with a custom parser.
@@ -76,43 +56,55 @@ inline fun <reified T>mapJSON(property:KMutableProperty0<T>, mapping: JSONMappin
     val json = mapping.json
     val key = mapping.key
     val parser = mapping.parser
-    if (json.jsonObject.has(key)) {
-        if (parser != null) {
-            mapJSON(property, json, key, parser)
-        } else {
-            mapJSON(property, json, key)
-        }
+    if (parser != null) {
+        mapJSON(property, json, key, parser)
+    } else {
+        mapJSON(property, json, key)
     }
 }
 
 // Null getters with json("id")
 inline operator fun <reified T> JSON.invoke(key: String): T? {
+    return getValue(this, key)
+}
 
-    if(key.isBlank() || jsonObject.length() < 1 || !jsonObject.has(key)){
+
+// Null getters with json("id")
+inline fun <reified T> getValue(json: JSON, key: String): T? {
+    if (isKeyPath(key)) {
+        val keys = key.split(".")
+        val lastKey = keys.last()
+        val allKeysButLast = keys.dropLast(1)
+        var nestedJSON = json
+        allKeysButLast.forEach { k ->
+            if (!nestedJSON.jsonObject.has(k)) {
+                return null
+            }
+            nestedJSON = JSON(nestedJSON.jsonObject.getJSONObject(k))
+        }
+        return getSingleValue(nestedJSON, lastKey)
+    }
+    return getSingleValue(json, key)
+}
+
+
+inline fun <reified T> getSingleValue(json: JSON, key: String): T? {
+    if(key.isBlank() || json.jsonObject.length() < 1 || !json.jsonObject.has(key)) {
         return null
     }
-
-    var json: JSON? = this
-    var jsonKey: String = key
-
-    if(isPathKey(key)){
-        val temp = parsePathKey(key)
-        jsonKey = temp.first
-        json = temp.second
-    }
-
     return when (T::class) {
-        Boolean::class -> json?.bool(jsonKey) as? T
-        String::class -> json?.string(jsonKey) as? T
-        Int::class -> json?.int(jsonKey) as? T
-        Long::class -> json?.long(jsonKey) as? T
-        Double::class -> json?.double(jsonKey) as? T
-        JSONObject::class -> json?.jsonObject?.getJSONObject(jsonKey) as? T
-        JSON::class -> json?.jsonObject?.getJSONObject(jsonKey)?.let { JSON(it) } as? T
-        JSONArray::class -> json?.jsonObject?.getJSONArray(jsonKey) as? T
+        Boolean::class -> json.bool(key) as? T
+        String::class -> json.string(key) as? T
+        Int::class -> json.int(key) as? T
+        Long::class -> json.long(key) as? T
+        Double::class -> json.double(key) as? T
+        JSONObject::class -> json.jsonObject.getJSONObject(key) as? T
+        JSON::class -> json.jsonObject.getJSONObject(key)?.let { JSON(it) } as? T
+        JSONArray::class -> json.jsonObject.getJSONArray(key) as? T
         else -> null
     }
 }
+
 
 inline operator fun <reified T> JSON.invoke(key: String, parser: JSONParser<T>): T? {
     return jsonOrNull(key)?.let { return parser.parse(it) }
@@ -142,40 +134,5 @@ fun JSON.jsonOrNull(key: String): JSON? {
     return null
 }
 
-fun JSON.getKey(key: String): JSON {
 
-    if(key.isBlank()) throw JSONException("The string must end with a proper key. Make sure the last character isn't a dot")
-
-    try {
-        return if(isPathKey(key)) {
-            val properties = key.split(".")
-            val firstKey = properties[0]
-
-            val subJson: JSON = this(firstKey)!!
-
-            //Use loop instead of recursivity
-            subJson.getKey(key.replaceFirst(Regex("^[^\\.]*\\."), ""))
-        }
-        else JSON(jsonObject.getJSONObject(key))
-    }
-    catch (e: Throwable) {
-        throw Throwable("Tried to access $key in ")
-    }
-
-}
-
-fun JSON.parsePathKey(key: String): Pair<String, JSON>{
-
-    val keys = key.split(".")
-
-    var newKey = ""
-    keys.dropLast(1).forEachIndexed { i, item ->
-        if(i > 0) { newKey += "." }
-        newKey += item
-    }
-
-    return Pair(keys.last(), getKey(newKey))
-}
-
-fun isPathKey(key: String): Boolean = key.contains(".")
-
+fun isKeyPath(key: String) = key.contains(".")
