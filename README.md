@@ -77,11 +77,11 @@ if (jsonObject.has("stats")) {
 if (jsonObject.has("dates")) {
     val dates = jsonObject.getJsonObject("dates")
 
-    if (jsonObject.has("production_dates")) {
-        val productionDates = jsonObject.getJsonObject("production_dates")
+    if (dates.has("production_dates")) {
+        val productionDates = dates.getJsonObject("production_dates")
 
-        if (jsonObject.has("start_date")) {
-            car.productionStartDate = jsonObject.getJsonObject("start_date")
+        if (productionDates.has("start_date")) {
+            car.productionStartDate = productionDates.getJsonObject("start_date")
         }
     }
 }
