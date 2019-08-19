@@ -5,7 +5,7 @@
 [![License: MIT](http://img.shields.io/badge/license-MIT-lightgrey.svg?style=flat)](https://github.com/Yummypets/JSON.kt/blob/master/LICENSE)
 
 <!-- TODO ![Release version](https://img.shields.io/github/release/Yummypets/JSON.kt.svg) -->
-Kotlin JSON Parsing that infers type 🚀  
+Kotlin JSON Parsing that infers type 🚀
 `JSON.kt` is a kotlin wrapper of java's `org.json.JSONObject` that exposes a nicer syntax for kotlin code.
 
 
@@ -13,6 +13,7 @@ Kotlin JSON Parsing that infers type 🚀
 car::id < json["id"]
 car::name < json["name"]
 car::statistics < json["stats", CarStatsJSONMapper()]
+car::productionStartDate < json["dates.production_dates.start_date"]
 ```
 
 ## Why?
@@ -39,6 +40,7 @@ class Car {
     var id = 0
     var name = ""
     var statistics = CarStatistics()
+    var productionStartDate = 0
 }
 ```
 And the following `JSON` file
@@ -50,6 +52,12 @@ And the following `JSON` file
     "stats": {
         "maxSpeed": 256,
         "numberOfWheels": 4
+    },
+    "dates": {
+        "production_dates": {
+            "start_date": "1984",
+            "end_date": "1993"
+        }
     }
 }
 ```
@@ -66,6 +74,17 @@ if (jsonObject.has("stats")) {
     val statsParser = CarStatsJSONMapper()
     car.statistics = statsParser.parse(jsonObject.getJSONObject("stats"))
 }
+if (jsonObject.has("dates")) {
+    val dates = jsonObject.getJsonObject("dates")
+
+    if (jsonObject.has("production_dates")) {
+        val productionDates = jsonObject.getJsonObject("production_dates")
+
+        if (jsonObject.has("start_date")) {
+            car.productionStartDate = jsonObject.getJsonObject("start_date")
+        }
+    }
+}
 ```
 
 ### With JSON.kt 😎
@@ -73,8 +92,9 @@ if (jsonObject.has("stats")) {
 car::id < json["id"]
 car::name < json["name"]
 car::statistics < json["stats", CarStatsJSONMapper()]
+car::productionStartDate < json["dates.production_dates.start_date"]
 ```
-The `<` operator maps a model property with a json key.  
+The `<` operator maps a model property with a json key.
 Notice that this does **exactly the same as the old parsing above**, meaning that if key does not exist, nothing happens and the model keeps its previous value.
 
 On the third line, we can provide our own custom mapper which enables us to reuse the same mapping at different places. 🤓
@@ -92,6 +112,22 @@ Perfect for providing default values while parsing!
 car.id = json("id") ?: 0
 car.name = json("name") ?: "unknown car"
 car.statistics = json("stats", CarStatsJSONMapper()) ?: CarStatistics()
+car.productionStartDate = json("dates.production_dates.start_date") ?: 0
+```
+### Specify the return type
+Sometimes it might be necessary to explicitly indicate the return type.
+
+##### Storing the result in a variable
+```kotlin
+val id: Int = json("id")
+```
+
+##### Without storing the result in a variable
+```kotlin
+json<JSONArray>("images")?.let { imageJsonArray ->
+  //Do something
+}
+
 ```
 
 ### A typical parser
@@ -104,6 +140,7 @@ class CarJSONParser : JSONParser<Car> {
         car::id < json["id"]
         car::name < json["name"]
         car::statistics < json["stats", CarStatsJSONMapper()]
+        car::productionStartDate < json("dates.production_dates.start_date")
         return car
     }
 }
